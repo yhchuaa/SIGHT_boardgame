@@ -1,117 +1,176 @@
-import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import { useState, useEffect } from "react";
+import { Dropdown } from "@nextui-org/react";
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [map, setMap] = useState([
+    ['0','0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 
+    ['0','1', '1', '1', '1', 'a', '1', '1', '1', '1', '1', '1', 'a', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', 'e', '0', 'e', '0', '0', '0', '0', 'e', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', 'e', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '1', '1', '1', '0', 'a', 'e', '1', 'e', '1', 'a', '0'], 
+    ['0','1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '1', '1', '1', '1', '1', '0', '1', 'a', '1', 'a', '1', '1', '0'], 
+    ['0','e', '0', '0', '0', '0', '1', '0', '1', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', 'a', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', 'e', '0', '0', '0', '0', '1', '0'], 
+    ['0','1', '0', '0', '0', '0', '1', '0', 'a', '0', '0', '0', '0', 'a', '0'], 
+    ['0','1', 'a', '1', '1', '1', '1', '1', '1', '1', '1', 'e', '1', '1', '0'],
+    ['0','0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0']])
+
+  const updateMap = (x:number, y:number, value:string) => {
+      setMap(prevMap => {
+        const map = [...prevMap];
+        map[y][x] = value;
+        return map;
+      })
+  }
+
+  var a_value:number = 0
+  var e_value:number = 0
+  const [count, Setcount] = useState(0)
+  const [a_sum, Seta_sum] = useState(0)
+  const [e_sum, Sete_sum] = useState(0)
+  const [run, SetRun] = useState(0)
+
+  function land(x:number,y:number,dir:string){
+    if(x==1 && y==2){
+        Seta_sum(a_sum + a_value)
+        a_value = 0
+        Sete_sum(e_sum + e_value)
+        e_value = 0
+        Setcount(count+1)
+        // start()
+        return
+    }
+    if(map[y][x] == 'a'){
+      a_value = a_value + 35.5
+    }
+    if(map[y][x] == 'e'){
+      e_value = e_value + 35.5
+    }
+    var steps = randomDice();
+    go(x,y,steps,dir)
+    return
+  }
+
+  function go(x:number, y:number, steps:number, dir:string){
+    if(steps==0 || (x==1 && y==2)){
+        land(x,y,dir);
+        return;
+    }
+    if(x==8 && y==1){
+        if(randomDice()){
+            go(9,1,steps-1,dir);
+        }else{
+            go(8,2,steps-1,'d');
+        }
+    }else if(x==13 && y==8){
+        if(randomDice()){
+            go(13,9,steps-1,dir);
+        }else{
+            go(12,8,steps-1,'l');
+        }
+    }else if(x==6 && y==13){
+          if(randomDice()){
+              go(5,13,steps-1,dir);
+          }else{
+              go(5,12,steps-1,'u');
+          }
+    }else if(dir=='r'){
+          if(map[y][x+1]!='0'){
+              go(x+1, y, steps-1, dir);
+          }else if(map[y+1][x]!='0'){
+              go(x, y+1, steps-1, 'd');
+          }else if(map[y-1][x]!='0'){
+              go(x, y-1, steps-1, 'u');
+          }
+              
+    }else if(dir=='d'){
+          if(map[y+1][x]!='0'){
+              go(x, y+1, steps-1, dir);
+          }else if(map[y][x-1]!='0'){
+              go(x-1, y, steps-1, 'l');
+          }else if(map[y][x+1]!='0'){
+              go(x+1, y, steps-1, 'r');
+          }
+
+    }else if(dir=='l'){
+          if(map[y][x-1]!='0'){
+              go(x-1, y, steps-1, dir);
+          }else if(map[y-1][x]!='0'){
+              go(x, y-1, steps-1, 'u');
+          }else if(map[y+1][x]!='0'){
+              go(x, y+1, steps-1, 'd');
+          }
+
+    }else if(dir=='u'){
+          if(map[y-1][x]!='0'){
+              go(x, y-1, steps-1, dir);
+          }else if(map[y][x+1]!='0'){
+              go(x+1, y, steps-1, 'r');
+          }else if(map[y][x-1]!='0'){
+              go(x-1, y, steps-1, 'l');
+          }
+    }
+  }
+
+  function randomDice(){
+    return Math.floor(Math.random() * (6) + 1)
+  }
+
+  function play(){
+     var steps = randomDice()
+     go(1,1,steps,'r')
+  }
+
+  useEffect(()=>{
+    if(run){
+      play();
+    }
+  })
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className='h-screen w-screen bg-white'>
+      <div className='flex w-full'>
+        <div className='w-4/5 h-screen'>
+          <div className='place-self-center h-full w-full grid grid-cols-15 grid-rows-15'>
+            {
+              map.map((line,y)=>(line.map((block,x)=>((block=='0')?<div></div>:
+              <div className='bg-yellow-300 border-4 border-black flex items-center justify-center'>
+                <Dropdown>
+                  <Dropdown.Trigger>
+                    <div className="h-12 w-20 cursor-pointer">
+                      {(block=='a')?<img className='h-12 m-auto' src="/adventure.png" alt="" />:(block=='e')?<img className='h-12 m-auto' src="/education.png" alt="" />:<div></div>}
+                    </div>
+                  </Dropdown.Trigger>
+                  <Dropdown.Menu selectionMode="single" onSelectionChange={(e)=>{updateMap(x,y,Array.from(e)[0].toString())}}>
+                    <Dropdown.Item key="n">None</Dropdown.Item>
+                    <Dropdown.Item key="e">Education</Dropdown.Item>
+                    <Dropdown.Item key="a">Adventure</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+              ))))
+            }
+          </div>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <div className='w-1/5 bg-gray-500 h-screen flex flex-col text-lg items-center justify-end'>
+          <div className='flex-auto'></div>
+          <div className='p-5'>Totoal round: {count}</div>
+          <div className='flex-auto'></div>
+          <div className='p-5'>Average Education Value:</div>
+          <div className='p-5'>{(count==0)?0:(e_sum/count).toFixed(5)}</div>
+          <div className='flex-auto'></div>
+          <div className='p-5'>Average Adventure Value:</div>
+          <div className='p-5'>{(count==0)?0:(a_sum/count).toFixed(5)}</div>
+          <button className='w-full p-10 bg-green-500' onClick={()=>{SetRun(1)}}>Start</button>
+          <button className='w-full p-10 bg-yellow-500' onClick={()=>{SetRun(0)}}>Pulse</button>
+          <button className='w-full p-10 bg-red-500' onClick={()=>{Seta_sum(0);Sete_sum(0);Setcount(0)}}>Clear</button>
+        </div>
       </div>
     </main>
   )
